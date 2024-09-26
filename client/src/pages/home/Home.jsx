@@ -1,44 +1,17 @@
-import { useEffect, useState } from "react";
-import socketIO from "socket.io-client";
 
-const getSocket = () => {
-  return socketIO("http://localhost:5000");
-};
+import useSocket from "../../hooks/useSocket";
+
 
 
 const Home = () => {
-  const [imageData, setImageData] = useState(null);
-
-  useEffect(() => {
-    const socket = getSocket();
-
-    socket.on("connected", () => {
-      console.log("Socket connected");
-    });
-
-    socket.on("live-image", (data) => {
-      setImageData(`data:image/jpeg;base64,${data}`);
-    });
-
-    socket.on("error", (err) => {
-      console.log("Socket error: ", err);
-    });
-
-    return () => {
-      socket.disconnect();
-      console.log("Socket disconnected");
-    };
-  }, []);
-
+  const { imageData, deviceIp } = useSocket();
 
   return (
     <div className="h-screen w-screen flex justify-center items-center p-6">
       <div className="flex flex-col items-center">
         <div className="mb-5 space-x-2">
-          <kbd className="kbd">⌘</kbd>
-          <kbd className="kbd">⌥</kbd>
-          <kbd className="kbd">⇧</kbd>
-          <kbd className="kbd">⌃</kbd>
+          {deviceIp && deviceIp.map((ip, index) => <kbd key={index} className="kbd">{ip}</kbd>)}
+
         </div>
         <div className="w-full max-w-4xl border rounded-lg bg-base-200 p-4">
           {imageData ? (

@@ -2,6 +2,7 @@
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 #include "esp_camera.h"
+#include <HTTPClient.h>
 
 
 //======================================== CAMERA_MODEL_AI_THINKER GPIO.
@@ -50,6 +51,37 @@ bool LED_Flash_ON = true;
 
 // Initialize WiFiClient.
 WiFiClient client;
+
+void sendIPToServer(String localIP) {
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+
+    // Correct URL format
+    String url = String("http://") + String(serverName) + ":" + String(serverPort) + "/device-ip";
+    http.begin(url);
+    http.addHeader("Content-Type", "application/json");
+
+    // Create JSON payload
+    String payload = "{\"ip\":\"" + localIP + "\"}";
+
+    // Send HTTP POST request
+    int httpResponseCode = http.POST(payload);
+
+    // Check the response
+    if (httpResponseCode > 0) {
+      String response = http.getString();
+      Serial.println(httpResponseCode); // Print HTTP response code
+      Serial.println(response); // Print server response
+    } else {
+      Serial.print("Error on sending POST: ");
+      Serial.println(httpResponseCode); // Prints -1 on failure
+    }
+
+    http.end(); // Free resources
+  } else {
+    Serial.println("WiFi not connected");
+  }
+}
 
 //________________________________________________________________________________ sendPhotoToServer()
 void sendPhotoToServer() {
@@ -167,7 +199,6 @@ void sendPhotoToServer() {
   }
 }
 
-
 void setup() {
   // put your setup code here, to run once:
 
@@ -213,6 +244,11 @@ void setup() {
   Serial.println(ssid);
   //Serial.print("ESP32-CAM IP Address: ");
   //Serial.println(WiFi.localIP());
+
+    // Get local IP address
+  String localIP = WiFi.localIP().toString();
+  // Send the local IP to the Node.js server
+  sendIPToServer(localIP);
   //---------------------------------------- 
 
   //---------------------------------------- Set the camera ESP32 CAM.

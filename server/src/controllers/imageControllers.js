@@ -86,7 +86,7 @@ const uploadImageFromEsp32 = (req, res) => {
         });
     }
 
-    console.log("Image uploaded successfully", req.file?.path);
+    // console.log("Image uploaded successfully", req.file?.path);
 
     const base64Image = fs.readFileSync(req.file?.path, { encoding: "base64" });
 
